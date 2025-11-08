@@ -1,0 +1,205 @@
+/* ====================================================
+   Proiect C++ - Faza 1
+   Student: Cristina Racolta
+   Domeniu: Cafenea
+   Obiecte: Ceainic, Rasnita, Cana
+   Data: noiembrie 2025
+   ==================================================== */
+
+#include <iostream>
+#include <string>
+#include <iomanip>
+using namespace std;
+
+/* ====================================================
+   CLASA 1: Ceainic
+   ==================================================== */
+class Ceainic {
+public:
+    string material;
+    double capacitate; // litri
+    string culoare;
+    const int idCeainic;
+    static int nrCeainice;
+    double* temperaturi; // pointer în heap
+    int nrMasuratori;
+
+    // Constructor 1
+    Ceainic() : material("inox"), capacitate(1.0), culoare("argintiu"), idCeainic(++nrCeainice), nrMasuratori(1) {
+        temperaturi = new double[nrMasuratori]{25.0};
+    }
+
+    // Constructor 2
+    Ceainic(string m, double c) : material(m), capacitate(c), culoare("alb"), idCeainic(++nrCeainice), nrMasuratori(2) {
+        temperaturi = new double[nrMasuratori]{30.0, 90.0};
+    }
+
+    // Constructor 3
+    Ceainic(string m, double c, string cul, int id, int n)
+        : material(m), capacitate(c), culoare(cul), idCeainic(id), nrMasuratori(n) {
+        temperaturi = new double[nrMasuratori];
+        for (int i = 0; i < nrMasuratori; i++) temperaturi[i] = 70.0 + i * 5;
+        nrCeainice++;
+    }
+
+    ~Ceainic() {
+        delete[] temperaturi;
+    }
+
+    static double medieTemperaturi(double* t, int n) {
+        double s = 0;
+        for (int i = 0; i < n; i++) s += t[i];
+        return n > 0 ? s / n : 0;
+    }
+
+    void afisare() const {
+        cout << "Ceainic{id=" << idCeainic
+             << ", material=" << material
+             << ", capacitate=" << capacitate
+             << "L, culoare=" << culoare
+             << ", nrMasuratori=" << nrMasuratori
+             << "}" << endl;
+    }
+};
+int Ceainic::nrCeainice = 0;
+
+/* ====================================================
+   CLASA 2: Rasnita
+   ==================================================== */
+class Rasnita {
+public:
+    string tip;
+    int viteze;
+    double pret;
+    const string codRasnita;
+    static string producator;
+    string* boabeSuportate; // pointer heap
+    int nrTipuri;
+
+    // Constructor 1
+    Rasnita() : tip("manuala"), viteze(1), pret(50.0), codRasnita("R0"), nrTipuri(1) {
+        boabeSuportate = new string[nrTipuri]{"Arabica"};
+    }
+
+    // Constructor 2
+    Rasnita(string t, int v) : tip(t), viteze(v), pret(150.0), codRasnita("R1"), nrTipuri(2) {
+        boabeSuportate = new string[nrTipuri]{"Arabica", "Robusta"};
+    }
+
+    // Constructor 3
+    Rasnita(string t, int v, double p, string cod, int n)
+        : tip(t), viteze(v), pret(p), codRasnita(cod), nrTipuri(n) {
+        boabeSuportate = new string[nrTipuri];
+        for (int i = 0; i < nrTipuri; i++) boabeSuportate[i] = "Boabe_" + to_string(i + 1);
+    }
+
+    ~Rasnita() {
+        delete[] boabeSuportate;
+    }
+
+    static double pretRedus(double pret, double procent) {
+        return pret * (1 - procent / 100);
+    }
+
+    void afisare() const {
+        cout << "Rasnita{cod=" << codRasnita
+             << ", tip=" << tip
+             << ", viteze=" << viteze
+             << ", pret=" << pret
+             << ", producator=" << producator
+             << ", nrTipuriBoabe=" << nrTipuri
+             << "}" << endl;
+    }
+};
+string Rasnita::producator = "Cafenea CR";
+
+/* ====================================================
+   CLASA 3: Cana
+   ==================================================== */
+class Cana {
+public:
+    string culoare;
+    int capacitate; // ml
+    bool areCapac;
+    const int idCana;
+    static int nrCani;
+    string* modele; // pointer heap
+    int nrModele;
+
+    // Constructor 1
+    Cana() : culoare("alb"), capacitate(250), areCapac(false), idCana(++nrCani), nrModele(1) {
+        modele = new string[nrModele]{"Clasic"};
+    }
+
+    // Constructor 2
+    Cana(string cul, int cap) : culoare(cul), capacitate(cap), areCapac(true), idCana(++nrCani), nrModele(2) {
+        modele = new string[nrModele]{"Elegant", "Modern"};
+    }
+
+    // Constructor 3
+    Cana(string cul, int cap, bool a, int id, int n)
+        : culoare(cul), capacitate(cap), areCapac(a), idCana(id), nrModele(n) {
+        modele = new string[nrModele];
+        for (int i = 0; i < nrModele; i++) modele[i] = "Model_" + to_string(i + 1);
+        nrCani++;
+    }
+
+    ~Cana() {
+        delete[] modele;
+    }
+
+    static int volumTotal(int nrCani, int capacitateCana) {
+        return nrCani * capacitateCana;
+    }
+
+    void afisare() const {
+        cout << "Cana{id=" << idCana
+             << ", culoare=" << culoare
+             << ", capacitate=" << capacitate << "ml"
+             << ", areCapac=" << (areCapac ? "Da" : "Nu")
+             << ", nrModele=" << nrModele
+             << "}" << endl;
+    }
+};
+int Cana::nrCani = 0;
+
+/* ====================================================
+   FUNCTIA MAIN
+   ==================================================== */
+int main() {
+    cout << fixed << setprecision(2);
+
+    cout << "=== TEST CEAINIC ===" << endl;
+    Ceainic c1;
+    Ceainic c2("sticla", 1.5);
+    Ceainic c3("ceramica", 2.0, "rosu", 100, 3);
+    c1.afisare();
+    c2.afisare();
+    c3.afisare();
+
+    cout << "\n=== TEST RASNITA ===" << endl;
+    Rasnita r1;
+    Rasnita r2("electrica", 5);
+    Rasnita r3("profesionala", 10, 350.0, "R99", 3);
+    r1.afisare();
+    r2.afisare();
+    r3.afisare();
+
+    cout << "\n=== TEST CANA ===" << endl;
+    Cana ca1;
+    Cana ca2("rosie", 300);
+    Cana ca3("neagra", 400, true, 999, 3);
+    ca1.afisare();
+    ca2.afisare();
+    ca3.afisare();
+
+    cout << "\n=== FUNCTII STATICE ===" << endl;
+    cout << "Medie temperaturi Ceainic: " 
+         << Ceainic::medieTemperaturi(c3.temperaturi, c3.nrMasuratori) << "°C" << endl;
+    cout << "Pret rasnita cu reducere 10%: " 
+         << Rasnita::pretRedus(200.0, 10.0) << " lei" << endl;
+    cout << "Volum total 4 cani x 300ml: " 
+         << Cana::volumTotal(4, 300) << " ml" << endl;
+
+    return 0;
+}

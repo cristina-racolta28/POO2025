@@ -1,0 +1,283 @@
+#include <iostream>
+using namespace std;
+
+// ========================= Clasa Vapor - Faza 2 =========================
+class Vapor {
+private:
+    // Atribut static: numarul total de vapoare create
+    static int nrVapoare;
+
+    // ID-ul vaporului (constant, unic pe fiecare obiect)
+    const int idVapor;
+
+    int capacitate;            // capacitatea maxima de persoane
+    int nrPersoaneImbarcate;   // cate persoane sunt imbarcate (<= capacitate)
+    int* varstePasageri;       // vector alocat dinamic cu varstele pasagerilor
+    float tonaj;               // atribut la alegere: tonajul vaporului in tone
+
+public:
+    // ================= Constructor fara parametri =================
+    Vapor() : idVapor(++nrVapoare) {
+        capacitate = 0;
+        nrPersoaneImbarcate = 0;
+        varstePasageri = nullptr;
+        tonaj = 0.0f;
+    }
+
+    // ================= Constructor cu parametri =================
+    Vapor(int capacitate,
+          int nrPersoane,
+          const int* varste,
+          float tonaj) : idVapor(++nrVapoare), varstePasageri(nullptr) {
+
+        // validare capacitate
+        if (capacitate < 0)
+            this->capacitate = 0;
+        else
+            this->capacitate = capacitate;
+
+        // validare nrPersoaneImbarcate
+        if (nrPersoane < 0)
+            this->nrPersoaneImbarcate = 0;
+        else if (nrPersoane > this->capacitate)
+            this->nrPersoaneImbarcate = this->capacitate;
+        else
+            this->nrPersoaneImbarcate = nrPersoane;
+
+        // validare tonaj
+        if (tonaj < 0)
+            this->tonaj = 0.0f;
+        else
+            this->tonaj = tonaj;
+
+        // alocare si copiere vector varste
+        if (this->nrPersoaneImbarcate > 0 && varste != nullptr) {
+            varstePasageri = new int[this->nrPersoaneImbarcate];
+            for (int i = 0; i < this->nrPersoaneImbarcate; i++) {
+                varstePasageri[i] = varste[i];
+            }
+        } else {
+            varstePasageri = nullptr;
+        }
+    }
+
+    // ================= Constructor de copiere =================
+    Vapor(const Vapor& other) : idVapor(other.idVapor), varstePasageri(nullptr) {
+        capacitate = other.capacitate;
+        nrPersoaneImbarcate = other.nrPersoaneImbarcate;
+        tonaj = other.tonaj;
+
+        if (other.varstePasageri != nullptr && other.nrPersoaneImbarcate > 0) {
+            varstePasageri = new int[other.nrPersoaneImbarcate];
+            for (int i = 0; i < other.nrPersoaneImbarcate; i++) {
+                varstePasageri[i] = other.varstePasageri[i];
+            }
+        }
+    }
+
+    // ================= Destructor =================
+    ~Vapor() {
+        if (varstePasageri != nullptr) {
+            delete[] varstePasageri;
+            varstePasageri = nullptr;
+        }
+    }
+
+    // ================= Getteri =================
+    int getIdVapor() const {
+        return idVapor;
+    }
+
+    int getCapacitate() const {
+        return capacitate;
+    }
+
+    int getNrPersoaneImbarcate() const {
+        return nrPersoaneImbarcate;
+    }
+
+    float getTonaj() const {
+        return tonaj;
+    }
+
+    // intoarce pointerul, dar nu il modificam in main
+    const int* getVarstePasageri() const {
+        return varstePasageri;
+    }
+
+    // getter static pentru atributul static
+    static int getNrVapoare() {
+        return nrVapoare;
+    }
+
+    // ================= Setteri =================
+    void setCapacitate(int c) {
+        if (c < 0) c = 0;
+        capacitate = c;
+        // daca scadem capacitatea sub nrPersoaneImbarcate, ajustam numarul de persoane
+        if (nrPersoaneImbarcate > capacitate)
+            nrPersoaneImbarcate = capacitate;
+    }
+
+    void setNrPersoaneImbarcate(int n) {
+        if (n < 0)
+            n = 0;
+        else if (n > capacitate)
+            n = capacitate;
+
+        // daca se schimba numarul de persoane, trebuie re-alocat vectorul de varste
+        if (n == 0) {
+            // fara pasageri
+            if (varstePasageri != nullptr) {
+                delete[] varstePasageri;
+                varstePasageri = nullptr;
+            }
+            nrPersoaneImbarcate = 0;
+        } else {
+            // realocam vectorul (nu avem valori, doar resetam la 0)
+            if (varstePasageri != nullptr) {
+                delete[] varstePasageri;
+                varstePasageri = nullptr;
+            }
+            nrPersoaneImbarcate = n;
+            varstePasageri = new int[nrPersoaneImbarcate];
+            for (int i = 0; i < nrPersoaneImbarcate; i++)
+                varstePasageri[i] = 0;
+        }
+    }
+
+    void setTonaj(float t) {
+        if (t < 0) t = 0.0f;
+        tonaj = t;
+    }
+
+    // set pentru varste + nrPersoane
+    void setVarstePasageri(int n, const int* varste) {
+        if (n < 0) n = 0;
+        if (n > capacitate) n = capacitate;
+
+        // eliberam vechiul vector
+        if (varstePasageri != nullptr) {
+            delete[] varstePasageri;
+            varstePasageri = nullptr;
+        }
+
+        nrPersoaneImbarcate = n;
+
+        if (nrPersoaneImbarcate > 0 && varste != nullptr) {
+            varstePasageri = new int[nrPersoaneImbarcate];
+            for (int i = 0; i < nrPersoaneImbarcate; i++)
+                varstePasageri[i] = varste[i];
+        }
+    }
+
+    // ================= Functii prietene (globale) =================
+    // functiile globale au nevoie de friend pentru a accesa atributele private
+
+    // 1) calculeaza totalul de persoane de pe doua vapoare
+    friend int totalPersoane(const Vapor& v1, const Vapor& v2);
+
+    // 2) intoarce vaporul cu capacitatea mai mare (1 sau 2)
+    friend int comparareCapacitate(const Vapor& v1, const Vapor& v2);
+};
+
+// initializare atribut static
+int Vapor::nrVapoare = 0;
+
+// =========== Functie globala 1: total persoane pe doua vapoare ===========
+int totalPersoane(const Vapor& v1, const Vapor& v2) {
+    // are acces la campurile private pentru ca este friend
+    return v1.nrPersoaneImbarcate + v2.nrPersoaneImbarcate;
+}
+
+// =========== Functie globala 2: compara capacitatea a doua vapoare ========
+int comparareCapacitate(const Vapor& v1, const Vapor& v2) {
+    // returneaza:
+    // 1 daca v1 are capacitate mai mare
+    // 2 daca v2 are capacitate mai mare
+    // 0 daca au capacitate egala
+    if (v1.capacitate > v2.capacitate) return 1;
+    if (v2.capacitate > v1.capacitate) return 2;
+    return 0;
+}
+
+// ================================ main ================================
+int main() {
+    // vectori de varste pentru test
+    int varste1[3] = {20, 25, 30};
+    int varste2[2] = {40, 50};
+
+    // Cream v1 cu constructorul fara parametri
+    Vapor v1;
+
+    // Setam valori prin setteri
+    v1.setCapacitate(10);
+    v1.setTonaj(15000.5f);
+    v1.setVarstePasageri(3, varste1); // seteaza si nrPersoaneImbarcate
+
+    // Cream v2 cu constructorul cu parametri
+    Vapor v2(5, 2, varste2, 12000.0f);
+
+    // Cream v3 prin constructor de copiere
+    Vapor v3 = v2;
+
+    // Afisam folosind GETTERI (cum cere enuntul)
+    cout << "=== Vapor v1 ===\n";
+    cout << "ID: " << v1.getIdVapor() << "\n";
+    cout << "Capacitate: " << v1.getCapacitate() << "\n";
+    cout << "Nr persoane: " << v1.getNrPersoaneImbarcate() << "\n";
+    cout << "Tonaj: " << v1.getTonaj() << "\n";
+    cout << "Varste: ";
+    if (v1.getVarstePasageri() != nullptr) {
+        const int* vp = v1.getVarstePasageri();
+        for (int i = 0; i < v1.getNrPersoaneImbarcate(); i++)
+            cout << vp[i] << " ";
+    } else {
+        cout << "-";
+    }
+    cout << "\n\n";
+
+    cout << "=== Vapor v2 ===\n";
+    cout << "ID: " << v2.getIdVapor() << "\n";
+    cout << "Capacitate: " << v2.getCapacitate() << "\n";
+    cout << "Nr persoane: " << v2.getNrPersoaneImbarcate() << "\n";
+    cout << "Tonaj: " << v2.getTonaj() << "\n";
+    cout << "Varste: ";
+    if (v2.getVarstePasageri() != nullptr) {
+        const int* vp = v2.getVarstePasageri();
+        for (int i = 0; i < v2.getNrPersoaneImbarcate(); i++)
+            cout << vp[i] << " ";
+    } else {
+        cout << "-";
+    }
+    cout << "\n\n";
+
+    cout << "=== Vapor v3 (copie din v2) ===\n";
+    cout << "ID: " << v3.getIdVapor() << "\n";
+    cout << "Capacitate: " << v3.getCapacitate() << "\n";
+    cout << "Nr persoane: " << v3.getNrPersoaneImbarcate() << "\n";
+    cout << "Tonaj: " << v3.getTonaj() << "\n";
+    cout << "Varste: ";
+    if (v3.getVarstePasageri() != nullptr) {
+        const int* vp = v3.getVarstePasageri();
+        for (int i = 0; i < v3.getNrPersoaneImbarcate(); i++)
+            cout << vp[i] << " ";
+    } else {
+        cout << "-";
+    }
+    cout << "\n\n";
+
+    // Testam functiile globale friend
+    cout << "Total persoane pe v1 si v2: "
+         << totalPersoane(v1, v2) << "\n";
+
+    int rez = comparareCapacitate(v1, v2);
+    if (rez == 1) cout << "Vaporul v1 are capacitate mai mare.\n";
+    else if (rez == 2) cout << "Vaporul v2 are capacitate mai mare.\n";
+    else cout << "Vapoarele au capacitate egala.\n";
+
+    // Afisam si numarul total de vapoare create (static)
+    cout << "Numar total de vapoare create: " << Vapor::getNrVapoare() << "\n";
+
+    return 0;
+}

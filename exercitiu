@@ -1,0 +1,209 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Cinema {
+private:
+    static int nrCinemauri;   // numar total de cinematografe create
+    const int idCinema;       // id unic pentru fiecare cinema
+
+    string nume;              // numele cinematografului
+    int nrSali;               // numar de sali
+    int* locuriSala;          // vector dinamic: locuri pe fiecare sala
+    float pretBilet;          // pretul unui bilet
+
+public:
+    // ================= Constructor fara parametri =================
+    Cinema() : idCinema(++nrCinemauri) {
+        nume = "Necunoscut";
+        nrSali = 0;
+        locuriSala = nullptr;
+        pretBilet = 0.0f;
+    }
+
+    // ================= Constructor cu parametri =================
+    Cinema(const string& nume,
+           int nrSali,
+           const int* locuri,
+           float pretBilet)
+        : idCinema(++nrCinemauri), locuriSala(nullptr)
+    {
+        this->nume = nume;
+
+        if (nrSali < 0)
+            this->nrSali = 0;
+        else
+            this->nrSali = nrSali;
+
+        if (pretBilet < 0)
+            this->pretBilet = 0.0f;
+        else
+            this->pretBilet = pretBilet;
+
+        if (this->nrSali > 0 && locuri != nullptr) {
+            locuriSala = new int[this->nrSali];
+            for (int i = 0; i < this->nrSali; i++)
+                locuriSala[i] = locuri[i];
+        }
+    }
+
+    // ================= Constructor de copiere =================
+    Cinema(const Cinema& other)
+        : idCinema(other.idCinema), locuriSala(nullptr)
+    {
+        nume = other.nume;
+        nrSali = other.nrSali;
+        pretBilet = other.pretBilet;
+
+        if (other.locuriSala != nullptr && other.nrSali > 0) {
+            locuriSala = new int[other.nrSali];
+            for (int i = 0; i < other.nrSali; i++)
+                locuriSala[i] = other.locuriSala[i];
+        }
+    }
+
+    // ================= Destructor =================
+    ~Cinema() {
+        if (locuriSala != nullptr) {
+            delete[] locuriSala;
+            locuriSala = nullptr;
+        }
+    }
+
+    // ================= GETTERI =================
+    int getIdCinema() const { return idCinema; }
+    string getNume() const { return nume; }
+    int getNrSali() const { return nrSali; }
+    float getPretBilet() const { return pretBilet; }
+    const int* getLocuriSala() const { return locuriSala; }
+
+    static int getNrCinemauri() { return nrCinemauri; }
+
+    // ================= SETTERI =================
+    void setNume(const string& n) {
+        nume = n;
+    }
+
+    void setPretBilet(float p) {
+        if (p < 0) p = 0.0f;
+        pretBilet = p;
+    }
+
+    void setNrSali(int n) {
+        if (n < 0) n = 0;
+
+        if (locuriSala != nullptr) {
+            delete[] locuriSala;
+            locuriSala = nullptr;
+        }
+
+        nrSali = n;
+        if (nrSali > 0) {
+            locuriSala = new int[nrSali];
+            for (int i = 0; i < nrSali; i++)
+                locuriSala[i] = 0;  // initializam cu 0 locuri
+        }
+    }
+
+    void setLocuriSala(int n, const int* locuri) {
+        if (n < 0) n = 0;
+
+        if (locuriSala != nullptr) {
+            delete[] locuriSala;
+            locuriSala = nullptr;
+        }
+
+        nrSali = n;
+
+        if (nrSali > 0 && locuri != nullptr) {
+            locuriSala = new int[nrSali];
+            for (int i = 0; i < nrSali; i++)
+                locuriSala[i] = locuri[i];
+        }
+    }
+
+    // ================= Functii globale friend =================
+    friend int totalLocuri(const Cinema& c1, const Cinema& c2);
+    friend const Cinema& biletMaiScump(const Cinema& c1, const Cinema& c2);
+};
+
+// initializare atribut static
+int Cinema::nrCinemauri = 0;
+
+// total locuri in doua cinematografe
+int totalLocuri(const Cinema& c1, const Cinema& c2) {
+    int total1 = 0, total2 = 0;
+
+    if (c1.locuriSala != nullptr) {
+        for (int i = 0; i < c1.nrSali; i++)
+            total1 += c1.locuriSala[i];
+    }
+
+    if (c2.locuriSala != nullptr) {
+        for (int i = 0; i < c2.nrSali; i++)
+            total2 += c2.locuriSala[i];
+    }
+
+    return total1 + total2;
+}
+
+// intoarce cinema-ul cu biletul mai scump
+const Cinema& biletMaiScump(const Cinema& c1, const Cinema& c2) {
+    if (c1.pretBilet >= c2.pretBilet)
+        return c1;
+    return c2;
+}
+
+// ================= main - test cu GETTERI =================
+int main() {
+    int locuri1[3] = {100, 150, 200};
+    int locuri2[2] = {80, 120};
+
+    Cinema c1;  // ctor fara parametri
+    c1.setNume("Cinema Central");
+    c1.setPretBilet(30.0f);
+    c1.setLocuriSala(3, locuri1);
+
+    Cinema c2("MoviePlex", 2, locuri2, 35.0f); // ctor cu parametri
+
+    Cinema c3 = c2; // ctor de copiere
+
+    cout << "=== Cinema c1 ===\n";
+    cout << "ID: " << c1.getIdCinema() << "\n";
+    cout << "Nume: " << c1.getNume() << "\n";
+    cout << "Nr sali: " << c1.getNrSali() << "\n";
+    cout << "Pret bilet: " << c1.getPretBilet() << "\n";
+    cout << "Locuri pe sala: ";
+    if (c1.getLocuriSala() != nullptr) {
+        const int* v = c1.getLocuriSala();
+        for (int i = 0; i < c1.getNrSali(); i++)
+            cout << v[i] << " ";
+    } else {
+        cout << "-";
+    }
+    cout << "\n\n";
+
+    cout << "=== Cinema c2 ===\n";
+    cout << "ID: " << c2.getIdCinema() << "\n";
+    cout << "Nume: " << c2.getNume() << "\n";
+    cout << "Nr sali: " << c2.getNrSali() << "\n";
+    cout << "Pret bilet: " << c2.getPretBilet() << "\n\n";
+
+    cout << "=== Cinema c3 (copie din c2) ===\n";
+    cout << "ID: " << c3.getIdCinema() << "\n";
+    cout << "Nume: " << c3.getNume() << "\n";
+    cout << "Nr sali: " << c3.getNrSali() << "\n";
+    cout << "Pret bilet: " << c3.getPretBilet() << "\n\n";
+
+    cout << "Total locuri in c1 si c2: "
+         << totalLocuri(c1, c2) << "\n";
+
+    const Cinema& cx = biletMaiScump(c1, c2);
+    cout << "Cinema cu bilet mai scump: " << cx.getNume()
+         << " (pret: " << cx.getPretBilet() << ")\n";
+
+    cout << "Numar total de cinematografe create: "
+         << Cinema::getNrCinemauri() << "\n";
+
+    return 0;
+}

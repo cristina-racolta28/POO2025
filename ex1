@@ -1,0 +1,198 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Biblioteca {
+private:
+    static int nrBiblioteci;      // numar total de biblioteci create
+    const int idBiblioteca;       // id unic pentru fiecare biblioteca
+
+    string adresa;                // adresa bibliotecii
+    int nrAbonati;                // numar de abonati
+    float pretAbonament;          // pretul unui abonament
+    int* ultimaVizita;            // vector dinamic: luna ultimei vizite pt. fiecare abonat
+
+public:
+    // ================== Constructor fara parametri ==================
+    Biblioteca() : idBiblioteca(++nrBiblioteci) {
+        adresa = "Necunoscuta";
+        nrAbonati = 0;
+        pretAbonament = 0.0f;
+        ultimaVizita = nullptr;
+    }
+
+    // ================== Constructor cu parametri ==================
+    Biblioteca(const string& adresa,
+               int nrAbonati,
+               float pretAbonament,
+               const int* luniUltimaVizita)
+        : idBiblioteca(++nrBiblioteci), ultimaVizita(nullptr)
+    {
+        this->adresa = adresa;
+
+        if (nrAbonati < 0)
+            this->nrAbonati = 0;
+        else
+            this->nrAbonati = nrAbonati;
+
+        if (pretAbonament < 0)
+            this->pretAbonament = 0.0f;
+        else
+            this->pretAbonament = pretAbonament;
+
+        if (this->nrAbonati > 0 && luniUltimaVizita != nullptr) {
+            ultimaVizita = new int[this->nrAbonati];
+            for (int i = 0; i < this->nrAbonati; i++)
+                ultimaVizita[i] = luniUltimaVizita[i];
+        }
+    }
+
+    // ================== Constructor de copiere (deep copy) ==================
+    Biblioteca(const Biblioteca& other)
+        : idBiblioteca(other.idBiblioteca), ultimaVizita(nullptr)
+    {
+        adresa = other.adresa;
+        nrAbonati = other.nrAbonati;
+        pretAbonament = other.pretAbonament;
+
+        if (other.ultimaVizita != nullptr && other.nrAbonati > 0) {
+            ultimaVizita = new int[other.nrAbonati];
+            for (int i = 0; i < other.nrAbonati; i++)
+                ultimaVizita[i] = other.ultimaVizita[i];
+        }
+    }
+
+    // ================== Destructor ==================
+    ~Biblioteca() {
+        if (ultimaVizita != nullptr) {
+            delete[] ultimaVizita;
+            ultimaVizita = nullptr;
+        }
+    }
+
+    // ================== GETTERI ==================
+    int getIdBiblioteca() const { return idBiblioteca; }
+    string getAdresa() const { return adresa; }
+    int getNrAbonati() const { return nrAbonati; }
+    float getPretAbonament() const { return pretAbonament; }
+    const int* getUltimaVizita() const { return ultimaVizita; }
+
+    static int getNrBiblioteci() { return nrBiblioteci; }
+
+    // ================== SETTERI ==================
+    void setAdresa(const string& a) {
+        adresa = a;
+    }
+
+    void setNrAbonati(int n) {
+        if (n < 0) n = 0;
+
+        // realocam vectorul daca se schimba numarul de abonati
+        if (ultimaVizita != nullptr) {
+            delete[] ultimaVizita;
+            ultimaVizita = nullptr;
+        }
+
+        nrAbonati = n;
+        if (nrAbonati > 0) {
+            ultimaVizita = new int[nrAbonati];
+            for (int i = 0; i < nrAbonati; i++)
+                ultimaVizita[i] = 0; // necunoscuta luna ultimei vizite
+        }
+    }
+
+    void setPretAbonament(float p) {
+        if (p < 0) p = 0.0f;
+        pretAbonament = p;
+    }
+
+    void setUltimaVizita(int n, const int* luni) {
+        if (n < 0) n = 0;
+
+        if (ultimaVizita != nullptr) {
+            delete[] ultimaVizita;
+            ultimaVizita = nullptr;
+        }
+
+        nrAbonati = n;
+
+        if (nrAbonati > 0 && luni != nullptr) {
+            ultimaVizita = new int[nrAbonati];
+            for (int i = 0; i < nrAbonati; i++)
+                ultimaVizita[i] = luni[i];
+        }
+    }
+
+    // ================== Functii globale friend ==================
+    friend int totalAbonati(const Biblioteca& b1, const Biblioteca& b2);
+    friend const Biblioteca& abonamentMaiScump(const Biblioteca& b1, const Biblioteca& b2);
+};
+
+// initializare atribut static
+int Biblioteca::nrBiblioteci = 0;
+
+// functie globala 1: total abonati din doua biblioteci
+int totalAbonati(const Biblioteca& b1, const Biblioteca& b2) {
+    return b1.nrAbonati + b2.nrAbonati;
+}
+
+// functie globala 2: intoarce biblioteca cu pretul de abonament mai mare
+const Biblioteca& abonamentMaiScump(const Biblioteca& b1, const Biblioteca& b2) {
+    if (b1.pretAbonament >= b2.pretAbonament)
+        return b1;
+    return b2;
+}
+
+// ================== main - testam tot cu GETTERI ==================
+int main() {
+    int luni1[3] = {1, 2, 5};   // ultimele luni vizitate de abonati
+    int luni2[2] = {3, 4};
+
+    Biblioteca b1;  // ctor fara parametri
+    b1.setAdresa("Str. Principala 10");
+    b1.setPretAbonament(15.5f);
+    b1.setUltimaVizita(3, luni1);
+
+    Biblioteca b2("Str. Libertatii 5", 2, 20.0f, luni2); // ctor cu parametri
+
+    Biblioteca b3 = b2; // ctor de copiere
+
+    cout << "=== Biblioteca b1 ===\n";
+    cout << "ID: " << b1.getIdBiblioteca() << "\n";
+    cout << "Adresa: " << b1.getAdresa() << "\n";
+    cout << "Nr abonati: " << b1.getNrAbonati() << "\n";
+    cout << "Pret abonament: " << b1.getPretAbonament() << "\n";
+    cout << "Ultima vizita (luni): ";
+    if (b1.getUltimaVizita() != nullptr) {
+        const int* v = b1.getUltimaVizita();
+        for (int i = 0; i < b1.getNrAbonati(); i++)
+            cout << v[i] << " ";
+    } else {
+        cout << "-";
+    }
+    cout << "\n\n";
+
+    cout << "=== Biblioteca b2 ===\n";
+    cout << "ID: " << b2.getIdBiblioteca() << "\n";
+    cout << "Adresa: " << b2.getAdresa() << "\n";
+    cout << "Nr abonati: " << b2.getNrAbonati() << "\n";
+    cout << "Pret abonament: " << b2.getPretAbonament() << "\n\n";
+
+    cout << "=== Biblioteca b3 (copie din b2) ===\n";
+    cout << "ID: " << b3.getIdBiblioteca() << "\n";
+    cout << "Adresa: " << b3.getAdresa() << "\n";
+    cout << "Nr abonati: " << b3.getNrAbonati() << "\n";
+    cout << "Pret abonament: " << b3.getPretAbonament() << "\n\n";
+
+    cout << "Total abonati in b1 si b2: "
+         << totalAbonati(b1, b2) << "\n";
+
+    const Biblioteca& bx = abonamentMaiScump(b1, b2);
+    cout << "Biblioteca cu abonament mai scump are ID: "
+         << bx.getIdBiblioteca() << " si pret: " << bx.getPretAbonament() << "\n";
+
+    cout << "Numar total de biblioteci create: "
+         << Biblioteca::getNrBiblioteci() << "\n";
+
+    return 0;
+}

@@ -1,0 +1,86 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct Elev {
+    string nume;
+    int varsta;
+    float medie;
+};
+
+int main() {
+    vector<Elev> elevi;
+    int optiune;
+
+    do {
+        cout << "\n===== MENIU =====\n";
+        cout << "1. Adauga elev\n";
+        cout << "2. Afiseaza elevi\n";
+        cout << "3. Cauta elev dupa nume\n";
+        cout << "4. Media generala\n";
+        cout << "0. Iesire\n";
+        cout << "Alege optiunea: ";
+        cin >> optiune;
+
+        if (optiune == 1) {
+            Elev e;
+            cout << "Nume: ";
+            cin >> e.nume;
+            cout << "Varsta: ";
+            cin >> e.varsta;
+            cout << "Medie: ";
+            cin >> e.medie;
+            elevi.push_back(e);
+            cout << "Elev adaugat cu succes!\n";
+        }
+
+        else if (optiune == 2) {
+            if (elevi.empty()) {
+                cout << "Nu exista elevi!\n";
+            } else {
+                for (int i = 0; i < elevi.size(); i++) {
+                    cout << i + 1 << ". "
+                         << elevi[i].nume << " | "
+                         << elevi[i].varsta << " ani | "
+                         << "Media: " << elevi[i].medie << endl;
+                }
+            }
+        }
+
+        else if (optiune == 3) {
+            string cautat;
+            cout << "Introdu numele elevului: ";
+            cin >> cautat;
+            bool gasit = false;
+
+            for (auto e : elevi) {
+                if (e.nume == cautat) {
+                    cout << "Gasit: " << e.nume
+                         << " | Varsta: " << e.varsta
+                         << " | Media: " << e.medie << endl;
+                    gasit = true;
+                }
+            }
+
+            if (!gasit)
+                cout << "Elev negasit!\n";
+        }
+
+        else if (optiune == 4) {
+            if (elevi.empty()) {
+                cout << "Nu exista elevi!\n";
+            } else {
+                float suma = 0;
+                for (auto e : elevi)
+                    suma += e.medie;
+
+                cout << "Media generala: "
+                     << suma / elevi.size() << endl;
+            }
+        }
+
+    } while (optiune != 0);
+
+    cout << "Program terminat.\n";
+    return 0;
+}

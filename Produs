@@ -1,0 +1,90 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct Produs {
+    string nume;
+    double pret;
+    int stoc;
+};
+
+int main() {
+    vector<Produs> produse;
+    int optiune;
+
+    do {
+        cout << "\n===== MENIU MAGAZIN =====\n";
+        cout << "1. Adauga produs\n";
+        cout << "2. Afiseaza produse\n";
+        cout << "3. Cumpara produs\n";
+        cout << "4. Valoare totala stoc\n";
+        cout << "0. Iesire\n";
+        cout << "Alege optiunea: ";
+        cin >> optiune;
+
+        if (optiune == 1) {
+            Produs p;
+            cout << "Nume produs: ";
+            cin >> p.nume;
+            cout << "Pret: ";
+            cin >> p.pret;
+            cout << "Stoc: ";
+            cin >> p.stoc;
+            produse.push_back(p);
+            cout << "Produs adaugat!\n";
+        }
+
+        else if (optiune == 2) {
+            if (produse.empty()) {
+                cout << "Nu exista produse!\n";
+            } else {
+                for (int i = 0; i < produse.size(); i++) {
+                    cout << i + 1 << ". "
+                         << produse[i].nume << " | "
+                         << "Pret: " << produse[i].pret << " lei | "
+                         << "Stoc: " << produse[i].stoc << endl;
+                }
+            }
+        }
+
+        else if (optiune == 3) {
+            string cautat;
+            int cantitate;
+            bool gasit = false;
+
+            cout << "Nume produs: ";
+            cin >> cautat;
+            cout << "Cantitate: ";
+            cin >> cantitate;
+
+            for (auto &p : produse) {
+                if (p.nume == cautat) {
+                    gasit = true;
+                    if (p.stoc >= cantitate) {
+                        p.stoc -= cantitate;
+                        cout << "Total de plata: "
+                             << p.pret * cantitate << " lei\n";
+                    } else {
+                        cout << "Stoc insuficient!\n";
+                    }
+                }
+            }
+
+            if (!gasit)
+                cout << "Produs negasit!\n";
+        }
+
+        else if (optiune == 4) {
+            double total = 0;
+            for (auto p : produse)
+                total += p.pret * p.stoc;
+
+            cout << "Valoare totala stoc: "
+                 << total << " lei\n";
+        }
+
+    } while (optiune != 0);
+
+    cout << "Program inchis.\n";
+    return 0;
+}
